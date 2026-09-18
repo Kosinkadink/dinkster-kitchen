@@ -209,8 +209,20 @@ jobs:
           name: sageattention-windows-x86_64
           path: dist
 
-      - name: List wheels to publish
-        run: ls -la dist/
+      - name: Validate wheels to publish
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          wheels = sorted(Path("dist").glob("*.whl"))
+          for wheel in wheels:
+              print(wheel.name)
+          if len(wheels) != 2:
+              raise SystemExit(f"expected exactly two wheels, found {len(wheels)}")
+          invalid = [wheel.name for wheel in wheels if not wheel.name.startswith("dinkster_kitchen-")]
+          if invalid:
+              raise SystemExit(f"refusing to publish unexpected wheel names: {invalid}")
+          PY
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
