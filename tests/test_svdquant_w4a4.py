@@ -16,14 +16,14 @@ import pytest
 import torch
 import torch.nn.functional as functional
 
-import comfy_kitchen as ck
-from comfy_kitchen.backends.eager.svdquant import (
+import dinkster_kitchen as ck
+from dinkster_kitchen.backends.eager.svdquant import (
     _INT4_MAX,
     _UINT4_MAX,
     _unpack_int4_row_major,
     _unpack_uint4_row_major,
 )
-from comfy_kitchen.tensor import (
+from dinkster_kitchen.tensor import (
     QuantizedTensor,
     TensorCoreSVDQuantW4A4Layout,
     svdquant_w4a4_can_share_quant,
@@ -490,9 +490,9 @@ class TestSvdquantSmoke:
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
         if fast_accum:
-            monkeypatch.setenv("COMFY_KITCHEN_SVDQUANT_FAST_ACCUM", "1")
+            monkeypatch.setenv("DINKSTER_KITCHEN_SVDQUANT_FAST_ACCUM", "1")
         else:
-            monkeypatch.delenv("COMFY_KITCHEN_SVDQUANT_FAST_ACCUM", raising=False)
+            monkeypatch.delenv("DINKSTER_KITCHEN_SVDQUANT_FAST_ACCUM", raising=False)
 
         m, n, k, r = 64, 256, 256, 32
         device = "cuda"
@@ -550,11 +550,11 @@ class TestSvdquantSmoke:
             lora_up = _pack_n_interleaved(lora_up)
 
         with ck.use_backend("cuda"):
-            monkeypatch.setenv("COMFY_KITCHEN_SVDQUANT_FUSE_LORA_UP", "0")
+            monkeypatch.setenv("DINKSTER_KITCHEN_SVDQUANT_FUSE_LORA_UP", "0")
             unfused = ck.scaled_mm_svdquant_w4a4(
                 q_act, wgt, asc, wscales, lora_act, lora_up, bias,
             )
-            monkeypatch.setenv("COMFY_KITCHEN_SVDQUANT_FUSE_LORA_UP", "1")
+            monkeypatch.setenv("DINKSTER_KITCHEN_SVDQUANT_FUSE_LORA_UP", "1")
             fused = ck.scaled_mm_svdquant_w4a4(
                 q_act, wgt, asc, wscales, lora_act, lora_up, bias,
             )
@@ -566,14 +566,14 @@ class TestSvdquantSmoke:
         )
 
     def test_quantized_tensor_direct_cuda_survives_disabled_registry(self, cuda_available, seed, monkeypatch):
-        """ComfyUI may globally disable comfy_kitchen's CUDA registry entry on
+        """ComfyUI may globally disable dinkster_kitchen's CUDA registry entry on
         older PyTorch CUDA wheels. SVDQuant QuantizedTensor forward should still
         call the locally built CUDA extension directly when it is available.
         """
         if not cuda_available:
             pytest.skip("CUDA required")
 
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         if not getattr(cuda_backend, "_EXT_AVAILABLE", False):
             pytest.skip("CUDA extension required")

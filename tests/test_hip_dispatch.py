@@ -15,11 +15,11 @@ import sys
 import pytest
 import torch
 
-import comfy_kitchen.scaled_mm_v2 as scaled_mm_module
-from comfy_kitchen.backends import hip as hip_backend
+import dinkster_kitchen.scaled_mm_v2 as scaled_mm_module
+from dinkster_kitchen.backends import hip as hip_backend
 
 _ROOT = pathlib.Path(__file__).resolve().parents[1]
-_HIP_DIR = _ROOT / "comfy_kitchen" / "backends" / "hip"
+_HIP_DIR = _ROOT / "dinkster_kitchen" / "backends" / "hip"
 _HIP_CMAKE = _HIP_DIR / "CMakeLists.txt"
 _HIP_ARCH_MANIFEST = _HIP_DIR / "architectures.json"
 _HIP_ARCH_GROUP_NAMES = ("elementwise_only", "wmma_gfx11", "wmma_gfx12")
@@ -41,9 +41,9 @@ def test_non_rocm_runtime_does_not_import_hip_backend():
 
     code = """
 import sys
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 
-assert "comfy_kitchen.backends.hip" not in sys.modules
+assert "dinkster_kitchen.backends.hip" not in sys.modules
 status = ck.list_backends()["hip"]
 assert not status["available"]
 assert status["unavailable_reason"] == "PyTorch ROCm/HIP runtime not available"
@@ -189,7 +189,7 @@ def _setup_namespace() -> dict:
             break
         body.append(node)
     module = ast.Module(body=body, type_ignores=[])
-    namespace = {"__file__": str(path), "__name__": "comfy_kitchen_setup_test"}
+    namespace = {"__file__": str(path), "__name__": "dinkster_kitchen_setup_test"}
     exec(compile(module, str(path), "exec"), namespace)
     return namespace
 
@@ -309,18 +309,18 @@ def test_sdist_rules_include_every_hip_build_input():
     manifest = (_ROOT / "MANIFEST.in").read_text(encoding="utf-8")
     pyproject = (_ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
-    assert "include comfy_kitchen/backends/hip/CMakeLists.txt" in manifest
-    assert "recursive-include comfy_kitchen/backends/hip *.cpp *.h *.hip *.in *.json" in manifest
+    assert "include dinkster_kitchen/backends/hip/CMakeLists.txt" in manifest
+    assert "recursive-include dinkster_kitchen/backends/hip *.cpp *.h *.hip *.in *.json" in manifest
     assert "include-package-data = false" in pyproject
-    assert '"comfy_kitchen.backends.hip" = ["architectures.json"]' in pyproject
+    assert '"dinkster_kitchen.backends.hip" = ["architectures.json"]' in pyproject
 
 
 def test_hip_kernels_are_independent_of_the_python_extension_target():
     """Keep expensive HIP objects reusable across the CPython wheel matrix."""
     text = _HIP_CMAKE.read_text(encoding="utf-8")
 
-    assert "add_library(comfy_kitchen_hip_kernels OBJECT ${HIP_SOURCES})" in text
-    assert "target_sources(_C PRIVATE $<TARGET_OBJECTS:comfy_kitchen_hip_kernels>)" in text
+    assert "add_library(dinkster_kitchen_hip_kernels OBJECT ${HIP_SOURCES})" in text
+    assert "target_sources(_C PRIVATE $<TARGET_OBJECTS:dinkster_kitchen_hip_kernels>)" in text
 
     module_calls = re.findall(r"nanobind_add_module\((.*?)\)", text, re.DOTALL)
     assert module_calls
@@ -340,7 +340,7 @@ def test_combined_wheel_cache_keys_include_hip_sources():
     ]
 
     assert len(combined_cache_keys) == 2
-    assert all("'comfy_kitchen/backends/hip/**'" in key for key in combined_cache_keys)
+    assert all("'dinkster_kitchen/backends/hip/**'" in key for key in combined_cache_keys)
     windows_key = next(key for key in combined_cache_keys if "windows-x86_64" in key)
     assert "py${{ matrix.python-version }}" in windows_key
     versioned_windows_prefix = (

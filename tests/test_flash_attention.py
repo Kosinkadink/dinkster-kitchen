@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-import comfy_kitchen.flash_attention as flash_attention_module
+import dinkster_kitchen as ck
+import dinkster_kitchen.flash_attention as flash_attention_module
 
 requires_flash_decode = pytest.mark.skipif(
     not ck.flash_attention_decode_is_available(),
@@ -41,7 +41,7 @@ def test_flash_attention_decode_rejects_pinned_host_memory():
     # "not the CPU device" would wave these host pointers through. The launch
     # goes through _C directly because the Python wrapper's stream lookup
     # rejects a host tensor before the binding sees it.
-    from comfy_kitchen.backends import hip as hip_backend
+    from dinkster_kitchen.backends import hip as hip_backend
 
     batch, capacity, kv_heads, groups = 2, 128, 2, 4
     pinned = [

@@ -7,7 +7,7 @@ from typing import Any
 import torch
 import torch.nn as nn
 
-from comfy_kitchen.tensor import QuantizedTensor
+from dinkster_kitchen.tensor import QuantizedTensor
 
 logger = logging.getLogger(__name__)
 
@@ -148,8 +148,8 @@ def debug_mxfp8_capability():
     """Print detailed MXFP8 capability information for debugging."""
     import torch
 
-    from comfy_kitchen.scaled_mm_v2 import get_pytorch_version_info
-    from comfy_kitchen.tensor import TensorCoreMXFP8Layout
+    from dinkster_kitchen.scaled_mm_v2 import get_pytorch_version_info
+    from dinkster_kitchen.tensor import TensorCoreMXFP8Layout
 
     print("=" * 70)
     print("MXFP8 Debug Information")
@@ -192,9 +192,9 @@ def debug_mxfp8_capability():
 def enable_mxfp8_debug_logging():
     """Enable verbose logging for MXFP8 debugging."""
     import logging
-    logging.getLogger("comfy_kitchen.dispatch").setLevel(logging.DEBUG)
-    logging.getLogger("comfy_kitchen.tensor.base").setLevel(logging.DEBUG)
-    logging.getLogger("comfy_kitchen.tensor.mxfp8").setLevel(logging.DEBUG)
+    logging.getLogger("dinkster_kitchen.dispatch").setLevel(logging.DEBUG)
+    logging.getLogger("dinkster_kitchen.tensor.base").setLevel(logging.DEBUG)
+    logging.getLogger("dinkster_kitchen.tensor.mxfp8").setLevel(logging.DEBUG)
     print("MXFP8 debug logging enabled. Watch for:")
     print("  - 'Backend X selected for Y' - which backend handles each op")
     print("  - 'Unhandled op X for Y, dequantizing' - ops falling back")
@@ -218,7 +218,7 @@ class ApplyMXFP8Quantization:
 
     RETURN_TYPES = ("MODEL",)
     FUNCTION = "apply"
-    CATEGORY = "comfy_kitchen/quantization"
+    CATEGORY = "dinkster_kitchen/quantization"
 
     def apply(
         self,
@@ -298,8 +298,8 @@ if __name__ == "__main__":
         print("CUDA not available, skipping test")
         exit(0)
 
-    from comfy_kitchen.scaled_mm_v2 import get_pytorch_version_info
-    from comfy_kitchen.tensor import TensorCoreMXFP8Layout
+    from dinkster_kitchen.scaled_mm_v2 import get_pytorch_version_info
+    from dinkster_kitchen.tensor import TensorCoreMXFP8Layout
 
     print("=" * 80)
     print("MXFP8 Capability Check")
@@ -330,7 +330,7 @@ if __name__ == "__main__":
     print("=" * 80)
     print()
 
-    logging.getLogger("comfy_kitchen.dispatch").setLevel(logging.DEBUG)
+    logging.getLogger("dinkster_kitchen.dispatch").setLevel(logging.DEBUG)
 
     model = SimpleModel().to(device).to(torch.bfloat16)
     print(f"Before patching: {model}")
@@ -349,7 +349,7 @@ if __name__ == "__main__":
     output = model(x)
     torch.cuda.synchronize()
 
-    logging.getLogger("comfy_kitchen.dispatch").setLevel(logging.WARNING)
+    logging.getLogger("dinkster_kitchen.dispatch").setLevel(logging.WARNING)
 
     for _ in range(3):
         output = model(x)

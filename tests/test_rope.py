@@ -1,9 +1,9 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen._rope_utils import check_rope_inplace
-from comfy_kitchen.backends.eager import rope as eager_rope
+import dinkster_kitchen as ck
+from dinkster_kitchen._rope_utils import check_rope_inplace
+from dinkster_kitchen.backends.eager import rope as eager_rope
 
 from .conftest import assert_values_close, get_capable_backends
 

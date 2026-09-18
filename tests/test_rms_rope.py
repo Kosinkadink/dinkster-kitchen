@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 
 from .conftest import assert_values_close, get_capable_backends, requires_cuda_backend
 
@@ -53,7 +53,7 @@ def _shapes(layout, config):
 
 def _run_backend(op_name, backend, args, monkeypatch):
     if backend == "cuda":
-        from comfy_kitchen.backends.eager import rope as eager_rope
+        from dinkster_kitchen.backends.eager import rope as eager_rope
 
         def fail_fallback(*unused_args, **unused_kwargs):
             raise AssertionError(f"{op_name} unexpectedly used the eager fallback")

@@ -16,7 +16,7 @@ permissions:
 jobs:
   build_wheels_linux:
     name: Build Linux wheels
-    if: github.repository == 'Comfy-Org/comfy-kitchen'
+    if: github.repository == 'Kosinkadink/dinkster-kitchen'
     runs-on: ubuntu-22.04
 
     steps:
@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-4.13.6-linux-x86_64-cuda13-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'comfy_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
+          key: ccache-4.13.6-linux-x86_64-cuda13-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'dinkster_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-4.13.6-linux-x86_64-cuda13-
       - name: Set up Python 3.12
@@ -114,7 +114,7 @@ jobs:
             LD_LIBRARY_PATH=/usr/local/cuda-13.0/lib64:/opt/rocm/lib:/opt/rocm/lib64:$LD_LIBRARY_PATH
             LIBRARY_PATH=/usr/local/cuda-13.0/lib64/stubs:$LIBRARY_PATH
             CMAKE_GENERATOR=Ninja
-            COMFY_KITCHEN_BUILD_HIP=1
+            DINKSTER_KITCHEN_BUILD_HIP=1
             COMFY_CUDA_COMPILER_LAUNCHER=ccache
             COMFY_CXX_COMPILER_LAUNCHER=ccache
             CCACHE_DIR=/host${{ github.workspace }}/.ccache
@@ -182,11 +182,11 @@ jobs:
               with zipfile.ZipFile(wheel) as zf:
                   names = zf.namelist()
               has_cuda = any(
-                  name.startswith("comfy_kitchen/backends/cuda/_C") and name.endswith(".so")
+                  name.startswith("dinkster_kitchen/backends/cuda/_C") and name.endswith(".so")
                   for name in names
               )
               has_hip = any(
-                  name.startswith("comfy_kitchen/backends/hip/_C") and name.endswith(".so")
+                  name.startswith("dinkster_kitchen/backends/hip/_C") and name.endswith(".so")
                   for name in names
               )
               print(f"{wheel.name}: cuda={has_cuda} hip={has_hip}")
@@ -227,7 +227,7 @@ jobs:
 
   build_wheels_linux_arm64:
     name: Build Linux ARM64 wheels
-    if: github.repository == 'Comfy-Org/comfy-kitchen'
+    if: github.repository == 'Kosinkadink/dinkster-kitchen'
     runs-on: ubuntu-22.04-arm
 
     steps:
@@ -240,7 +240,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-4.13.6-linux-aarch64-cuda13-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
+          key: ccache-4.13.6-linux-aarch64-cuda13-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-4.13.6-linux-aarch64-cuda13-
       - name: Set up Python 3.12
@@ -352,7 +352,7 @@ jobs:
 
   build_wheels_windows:
     name: Build Windows wheel (Python ${{ matrix.python-version }})
-    if: github.repository == 'Comfy-Org/comfy-kitchen'
+    if: github.repository == 'Kosinkadink/dinkster-kitchen'
     runs-on: windows-2022
     strategy:
       matrix:
@@ -368,7 +368,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-windows-x86_64-cuda13-py${{ matrix.python-version }}-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'comfy_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
+          key: ccache-windows-x86_64-cuda13-py${{ matrix.python-version }}-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'dinkster_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-windows-x86_64-cuda13-py${{ matrix.python-version }}-
             ccache-windows-x86_64-cuda13-
@@ -475,7 +475,7 @@ jobs:
       - name: Build CUDA+HIP wheel
         shell: bash
         env:
-          COMFY_KITCHEN_BUILD_HIP: "1"
+          DINKSTER_KITCHEN_BUILD_HIP: "1"
         run: |
           # The explicit HIP opt-in emits cuda/_C* plus hip/_C* into one wheel.
           # Python 3.12 produces an abi3 wheel (both extensions are built
@@ -509,11 +509,11 @@ jobs:
               with zipfile.ZipFile(wheel) as zf:
                   names = zf.namelist()
                   pyds = [n for n in names
-                          if n.startswith("comfy_kitchen/backends/") and n.endswith(".pyd")]
+                          if n.startswith("dinkster_kitchen/backends/") and n.endswith(".pyd")]
 
                   def has(backend):
                       return any(
-                          n.startswith(f"comfy_kitchen/backends/{backend}/_C")
+                          n.startswith(f"dinkster_kitchen/backends/{backend}/_C")
                           and n.endswith(".pyd")
                           for n in names
                       )
@@ -563,7 +563,7 @@ jobs:
   test_linux:
     name: Test on Linux (Python ${{ matrix.python-version }})
     needs: build_wheels_linux
-    if: github.repository == 'Comfy-Org/comfy-kitchen'
+    if: github.repository == 'Kosinkadink/dinkster-kitchen'
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -611,7 +611,7 @@ jobs:
   test_windows:
     name: Test on Windows (Python ${{ matrix.python-version }})
     needs: build_wheels_windows
-    if: github.repository == 'Comfy-Org/comfy-kitchen'
+    if: github.repository == 'Kosinkadink/dinkster-kitchen'
     runs-on: windows-2022
     strategy:
       matrix:
@@ -661,7 +661,7 @@ jobs:
   # WoA ships only the Stable ABI (cp312-abi3) wheel - no 3.10/3.11 builds.
   build_wheels_windows_arm:
     name: Build Windows ARM abi3 wheel
-    if: github.repository == 'Comfy-Org/comfy-kitchen'
+    if: github.repository == 'Kosinkadink/dinkster-kitchen'
     runs-on: windows-11-arm
 
     steps:
@@ -674,7 +674,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-windows-arm64-cuda13.4-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
+          key: ccache-windows-arm64-cuda13.4-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-windows-arm64-cuda13.4-
 
@@ -942,7 +942,7 @@ jobs:
   test_windows_arm:
     name: Test on Windows ARM (abi3)
     needs: build_wheels_windows_arm
-    if: github.repository == 'Comfy-Org/comfy-kitchen'
+    if: github.repository == 'Kosinkadink/dinkster-kitchen'
     runs-on: windows-11-arm
 
     steps:
@@ -983,3 +983,228 @@ jobs:
           # Run all tests - conftest handles backend availability
           # Tests requiring CUDA will be skipped on CPU-only runners
           python -m pytest tests/ -v --tb=short
+
+  # Fork release job. Publishes the dinkster-kitchen wheels built by the matrix
+  # above and attaches them plus a SHA-256 manifest to a GitHub Release. It
+  # authenticates to PyPI with OIDC through the pypi environment (no token
+  # secret, no repository_url override), and the name guards below refuse any
+  # wheel whose basename is not a dinkster_kitchen release wheel, so another
+  # distribution's wheel can never be uploaded from this job.
+  publish_release:
+    name: Publish dinkster-kitchen release
+    needs: [build_wheels_linux, build_wheels_linux_arm64, build_wheels_windows, build_wheels_windows_arm, test_linux, test_windows, test_windows_arm]
+    if: github.repository == 'Kosinkadink/dinkster-kitchen' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download Linux CUDA+HIP wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-linux-cuda-hip
+          path: wheel-artifacts/linux-cuda-hip
+
+      - name: Download Linux ARM64 CUDA wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-linux-arm64-cuda
+          path: wheel-artifacts/linux-arm64-cuda
+
+      - name: Download Windows CUDA+HIP wheel (3.10)
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-windows-cuda-hip-3.10
+          path: wheel-artifacts/windows-cuda-hip-3.10
+
+      - name: Download Windows CUDA+HIP wheel (3.11)
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-windows-cuda-hip-3.11
+          path: wheel-artifacts/windows-cuda-hip-3.11
+
+      - name: Download Windows CUDA+HIP wheel (3.12)
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-windows-cuda-hip-3.12
+          path: wheel-artifacts/windows-cuda-hip-3.12
+
+      - name: Download Windows ARM CUDA abi3 wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-windows-arm-cuda
+          path: wheel-artifacts/windows-arm-cuda
+
+      - name: Download CPU-only wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-cpu-only
+          path: wheel-artifacts/cpu-only
+
+      - name: Collect, verify and manifest the release wheels
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import tomllib
+          import zipfile
+          from pathlib import Path
+
+          with open("pyproject.toml", "rb") as handle:
+              version = tomllib.load(handle)["project"]["version"]
+          tag = os.environ["GITHUB_REF_NAME"]
+          if tag != f"v{version}":
+              raise SystemExit(f"tag {tag} does not match pyproject version {version}")
+
+          prefix = f"dinkster_kitchen-{version}-"
+
+          # One slot per wheel the matrix produces, keyed by (python tag, ABI
+          # tag, platform slot). Anything missing or extra fails the release.
+          required_slots = [
+              ("cp310", "cp310", "manylinux_x86_64"),
+              ("cp311", "cp311", "manylinux_x86_64"),
+              ("cp312", "abi3", "manylinux_x86_64"),
+              ("cp310", "cp310", "manylinux_aarch64"),
+              ("cp311", "cp311", "manylinux_aarch64"),
+              ("cp312", "abi3", "manylinux_aarch64"),
+              ("cp310", "cp310", "win_amd64"),
+              ("cp311", "cp311", "win_amd64"),
+              ("cp312", "abi3", "win_amd64"),
+              ("cp312", "abi3", "win_arm64"),
+              ("py3", "none", "any"),
+          ]
+
+          # auditwheel may emit any manylinux_* level, so match the family and
+          # architecture rather than one exact platform tag.
+          def platform_slot(platform_tag):
+              if platform_tag.startswith("manylinux") and platform_tag.endswith("_x86_64"):
+                  return "manylinux_x86_64"
+              if platform_tag.startswith("manylinux") and platform_tag.endswith("_aarch64"):
+                  return "manylinux_aarch64"
+              if platform_tag in ("win_amd64", "win_arm64", "any"):
+                  return platform_tag
+              return None
+
+          # The dist-info METADATA is what pip installs and PyPI records, so the
+          # wheel's stated identity must match the release on top of the filename.
+          def metadata_name_and_version(archive):
+              members = [n for n in archive.namelist() if n.endswith(".dist-info/METADATA")]
+              if len(members) != 1:
+                  raise SystemExit(
+                      f"expected exactly one dist-info METADATA, found {len(members)}"
+                  )
+              found = {}
+              for line in archive.read(members[0]).decode("utf-8").splitlines():
+                  field, separator, value = line.partition(":")
+                  if separator and field.strip().lower() in ("name", "version"):
+                      found.setdefault(field.strip().lower(), value.strip())
+                  if len(found) == 2:
+                      break
+              return found.get("name"), found.get("version")
+
+          # Flatten the downloaded artifacts into dist/, rejecting non-wheel
+          # files, non-fork wheel names and filenames repeated across artifacts.
+          dist = Path("dist")
+          dist.mkdir(exist_ok=True)
+          sources = {}
+          for artifact_dir in sorted(p for p in Path("wheel-artifacts").iterdir() if p.is_dir()):
+              for wheel in sorted(artifact_dir.iterdir()):
+                  if not wheel.name.endswith(".whl"):
+                      raise SystemExit(f"unexpected non-wheel artifact file: {wheel}")
+                  if not wheel.name.startswith(prefix):
+                      raise SystemExit(f"refusing non-fork wheel name: {wheel.name}")
+                  if wheel.name in sources:
+                      raise SystemExit(
+                          f"duplicate wheel filename {wheel.name}"
+                          f" in artifacts {sources[wheel.name]} and {artifact_dir.name}"
+                      )
+                  sources[wheel.name] = artifact_dir.name
+                  wheel.replace(dist / wheel.name)
+
+          entries = []
+          slots = []
+          for wheel in sorted(dist.glob("*.whl")):
+              parts = wheel.name[: -len(".whl")].split("-")
+              if len(parts) != 5:
+                  raise SystemExit(f"unexpected wheel filename structure: {wheel.name}")
+              name, wheel_version, python_tag, abi_tag, platform_tag = parts
+              if name != "dinkster_kitchen" or wheel_version != version:
+                  raise SystemExit(
+                      f"refusing wheel that is not dinkster-kitchen {version}: {wheel.name}"
+                  )
+              with zipfile.ZipFile(wheel) as archive:
+                  metadata_name, metadata_version = metadata_name_and_version(archive)
+              if metadata_name != "dinkster-kitchen" or metadata_version != version:
+                  raise SystemExit(
+                      f"refusing wheel whose METADATA is not dinkster-kitchen {version}: "
+                      f"{wheel.name} (Name={metadata_name!r}, Version={metadata_version!r})"
+                  )
+              slot = platform_slot(platform_tag)
+              if slot is None:
+                  raise SystemExit(f"unexpected platform tag in {wheel.name}")
+              slots.append((python_tag, abi_tag, slot))
+              print(wheel.name)
+
+          if len(slots) != len(set(slots)):
+              raise SystemExit("duplicate (python, abi, platform) slot in collected wheels")
+          missing = sorted(set(required_slots) - set(slots))
+          extra = sorted(set(slots) - set(required_slots))
+          if missing:
+              raise SystemExit(f"release set incomplete, missing wheels for slots: {missing}")
+          if extra:
+              raise SystemExit(f"release set contains unexpected wheels for slots: {extra}")
+
+          manifest_path = Path("release-assets") / f"dinkster_kitchen-{version}-manifest.json"
+          manifest_path.parent.mkdir(exist_ok=True)
+          wheels = []
+          for wheel, slot in zip(sorted(dist.glob("*.whl")), slots):
+              digest = hashlib.sha256()
+              with wheel.open("rb") as handle:
+                  for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                      digest.update(chunk)
+              python_tag, abi_tag, _ = slot
+              wheels.append({
+                  "filename": wheel.name,
+                  "wheel_tag": f"{python_tag}-{abi_tag}",
+                  "platform_tag": wheel.name[: -len(".whl")].split("-")[-1],
+                  "size_bytes": wheel.stat().st_size,
+                  "sha256": digest.hexdigest(),
+              })
+          manifest_path.write_text(json.dumps({
+              "distribution": "dinkster-kitchen",
+              "version": version,
+              "tag": tag,
+              "wheels": wheels,
+          }, indent=2) + "\n", encoding="utf-8")
+          print(f"manifest: {manifest_path}")
+          PY
+          echo "Release wheels:"
+          ls -1 dist/*.whl
+
+      - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          upload-dir: dist
+
+      - name: Create GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME" \
+            --notes "dinkster-kitchen fork release $GITHUB_REF_NAME: Linux x86_64 and aarch64 wheels (CUDA+HIP, CUDA), Windows x64 wheels (CUDA+HIP), a Windows ARM64 CUDA wheel, the pure-Python CPU-only wheel, and a SHA-256 release manifest." \
+            dist/*.whl release-assets/*.json

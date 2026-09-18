@@ -6,8 +6,8 @@ import weakref
 import pytest
 import torch
 
-import comfy_kitchen as ck
-import comfy_kitchen.sage_attention as sage_attention_module
+import dinkster_kitchen as ck
+import dinkster_kitchen.sage_attention as sage_attention_module
 
 _CUDA_READY = torch.cuda.is_available() and ck.int8_attention_is_available()
 requires_int8_attention = pytest.mark.skipif(

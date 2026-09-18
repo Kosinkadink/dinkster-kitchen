@@ -1,13 +1,13 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.float_utils import F4_E2M1_MAX, F8_E4M3_MAX
+import dinkster_kitchen as ck
+from dinkster_kitchen.float_utils import F4_E2M1_MAX, F8_E4M3_MAX
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
 class TestCUDAGraphCompatibility:
-    """Test CUDA graph capture compatibility with comfy_kitchen CUDA backend.
+    """Test CUDA graph capture compatibility with dinkster_kitchen CUDA backend.
 
     These tests verify the DLPack stream workaround works correctly during
     CUDA graph capture on non-default streams.
@@ -17,7 +17,7 @@ class TestCUDAGraphCompatibility:
     def test_quantize_fp8_cuda_graph(self):
         """Test FP8 quantization inside CUDA graph capture."""
         try:
-            from comfy_kitchen.backends import cuda as cuda_backend
+            from dinkster_kitchen.backends import cuda as cuda_backend
             if not cuda_backend._EXT_AVAILABLE:
                 pytest.skip("CUDA extension not available")
         except ImportError:
@@ -57,7 +57,7 @@ class TestCUDAGraphCompatibility:
     def test_dequantize_fp8_cuda_graph(self):
         """Test FP8 dequantization inside CUDA graph capture."""
         try:
-            from comfy_kitchen.backends import cuda as cuda_backend
+            from dinkster_kitchen.backends import cuda as cuda_backend
             if not cuda_backend._EXT_AVAILABLE:
                 pytest.skip("CUDA extension not available")
         except ImportError:
@@ -99,7 +99,7 @@ class TestCUDAGraphCompatibility:
     def test_quantize_nvfp4_cuda_graph(self):
         """Test NVFP4 quantization inside CUDA graph capture."""
         try:
-            from comfy_kitchen.backends import cuda as cuda_backend
+            from dinkster_kitchen.backends import cuda as cuda_backend
             if not cuda_backend._EXT_AVAILABLE:
                 pytest.skip("CUDA extension not available")
         except ImportError:
@@ -138,7 +138,7 @@ class TestCUDAGraphCompatibility:
     def test_scaled_mm_nvfp4_cuda_graph(self):
         """Test NVFP4 scaled matmul inside CUDA graph capture."""
         try:
-            from comfy_kitchen.backends import cuda as cuda_backend
+            from dinkster_kitchen.backends import cuda as cuda_backend
             if not cuda_backend._EXT_AVAILABLE:
                 pytest.skip("CUDA extension not available")
         except ImportError:
@@ -192,7 +192,7 @@ class TestCUDAGraphCompatibility:
     def test_quantize_int8_cuda_graph(self):
         """Test INT8 quantization inside CUDA graph capture."""
         try:
-            from comfy_kitchen.backends import cuda as cuda_backend
+            from dinkster_kitchen.backends import cuda as cuda_backend
             if not cuda_backend._EXT_AVAILABLE:
                 pytest.skip("CUDA extension not available")
         except ImportError:
@@ -230,7 +230,7 @@ class TestCUDAGraphCompatibility:
     def test_dequantize_int8_cuda_graph(self):
         """Test INT8 dequantization inside CUDA graph capture."""
         try:
-            from comfy_kitchen.backends import cuda as cuda_backend
+            from dinkster_kitchen.backends import cuda as cuda_backend
             if not cuda_backend._EXT_AVAILABLE:
                 pytest.skip("CUDA extension not available")
         except ImportError:
@@ -270,7 +270,7 @@ class TestCUDAGraphCompatibility:
     def test_int8_linear_cuda_graph(self):
         """Test INT8 linear inside CUDA graph capture."""
         try:
-            from comfy_kitchen.backends import cuda as cuda_backend
+            from dinkster_kitchen.backends import cuda as cuda_backend
             if not cuda_backend._EXT_AVAILABLE:
                 pytest.skip("CUDA extension not available")
         except ImportError:

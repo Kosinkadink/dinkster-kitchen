@@ -1,9 +1,9 @@
-"""Unit tests for comfy_kitchen.tensor module."""
+"""Unit tests for dinkster_kitchen.tensor module."""
 import pytest
 import torch
 
-import comfy_kitchen
-from comfy_kitchen.tensor import (
+import dinkster_kitchen
+from dinkster_kitchen.tensor import (
     BaseLayoutParams,
     QuantizedTensor,
     TensorCoreFP8Layout,
@@ -899,7 +899,7 @@ class TestNVFP4LinearOperations:
 
         qt_x = QuantizedTensor.from_float(x, "TensorCoreNVFP4Layout")
         qt_w = QuantizedTensor.from_float(w, "TensorCoreNVFP4Layout")
-        with comfy_kitchen.use_backend("eager"):
+        with dinkster_kitchen.use_backend("eager"):
             result = torch.nn.functional.linear(qt_x, qt_w)
         expected = torch.nn.functional.linear(qt_x.dequantize(), qt_w.dequantize())
 
@@ -1383,7 +1383,7 @@ class TestINT8LinearOperations:
     """Tests for INT8 linear operations using QuantizedTensor."""
 
     def test_int8_linear_weight_quantized(self):
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         batch, in_features, out_features = 32, 64, 128
         x = torch.randn(batch, in_features, device="cuda", dtype=torch.bfloat16)
@@ -1410,7 +1410,7 @@ class TestINT8LinearOperations:
             assert (got.float() - truth).abs().max() < limit, name
 
     def test_int8_mm(self):
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         m, k, n = 64, 128, 256
         a = torch.randn(m, k, device="cuda", dtype=torch.bfloat16)

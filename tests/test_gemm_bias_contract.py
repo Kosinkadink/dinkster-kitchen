@@ -8,9 +8,9 @@ dtype. Every route that lands on them -- int8, int4 via int8, W4A8 chunked and
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.backends import cuda as cuda_backend
-from comfy_kitchen.backends.eager import w4a8_int8 as eager_w4a8
+import dinkster_kitchen as ck
+from dinkster_kitchen.backends import cuda as cuda_backend
+from dinkster_kitchen.backends.eager import w4a8_int8 as eager_w4a8
 from tests.conftest import rel_err, requires_cuda_backend
 
 pytestmark = requires_cuda_backend

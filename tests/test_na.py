@@ -4,8 +4,8 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.exceptions import NoCapableBackendError
+import dinkster_kitchen as ck
+from dinkster_kitchen.exceptions import NoCapableBackendError
 from tests.conftest import assert_values_close, get_capable_backends
 
 # ---------------------------------------------------------------------------

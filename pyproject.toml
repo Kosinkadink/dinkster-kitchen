@@ -15,8 +15,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "comfy-kitchen"
-version = "0.2.35"
+name = "dinkster-kitchen"
+version = "0.2.35.post1"
 description = "Fast Kernel Library for ComfyUI with multiple compute backends"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,7 +31,7 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/Comfy-Org/comfy-kitchen"
+Homepage = "https://github.com/Kosinkadink/dinkster-kitchen"
 
 [project.optional-dependencies]
 cublas = [
@@ -53,12 +53,12 @@ include-package-data = false
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["comfy_kitchen*"]
+include = ["dinkster_kitchen*"]
 exclude = ["tests*"]
 
 [tool.setuptools.package-data]
-"comfy_kitchen.backends.cuda" = ["*.cuh", "*.h"]
-"comfy_kitchen.backends.hip" = ["architectures.json"]
+"dinkster_kitchen.backends.cuda" = ["*.cuh", "*.h"]
+"dinkster_kitchen.backends.hip" = ["architectures.json"]
 
 [tool.ruff]
 # Set the maximum line length to 100.

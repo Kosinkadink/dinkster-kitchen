@@ -4,7 +4,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from comfy_kitchen.tensor import QuantizedTensor, TensorCoreNVFP4Layout
+from dinkster_kitchen.tensor import QuantizedTensor, TensorCoreNVFP4Layout
 
 
 class NVFP4Linear(nn.Module):

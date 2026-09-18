@@ -5,9 +5,9 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.backends import cuda
-from comfy_kitchen.tensor import TensorWiseINT8Layout
+import dinkster_kitchen as ck
+from dinkster_kitchen.backends import cuda
+from dinkster_kitchen.tensor import TensorWiseINT8Layout
 
 from .conftest import (
     assert_values_close,
@@ -33,7 +33,7 @@ COMFYUI_NVIDIA_16_SERIES = (
 
 def test_cuda_int8_cublas_turing_n_alignment(monkeypatch):
     """CUDA cuBLAS fallback pads Turing skinny N to 32."""
-    from comfy_kitchen.backends import cuda
+    from dinkster_kitchen.backends import cuda
 
     calls = []
 
@@ -107,7 +107,7 @@ def test_non_turing_devices_never_use_turing_kernels(capability, monkeypatch):
 
 def test_eager_int8_matmul_turing_n_alignment(monkeypatch):
     """Eager torch INT8 matmul pads Turing skinny N to 32."""
-    from comfy_kitchen.backends.eager import quantization
+    from dinkster_kitchen.backends.eager import quantization
 
     calls = []
 
@@ -313,7 +313,7 @@ class TestTensorWiseINT8Layout:
 
     def test_weight_quantize_shape_dtype(self, seed):
         """Weight path: output INT8, scalar scale, shape preserved."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         w = torch.randn(256, 512, device="cuda", dtype=torch.bfloat16)
         qt = QuantizedTensor.from_float(w, "TensorWiseINT8Layout")
@@ -325,7 +325,7 @@ class TestTensorWiseINT8Layout:
 
     def test_activation_quantize_shape_dtype(self, seed):
         """Activation path (is_weight=False): per-row scales [..., 1]."""
-        from comfy_kitchen.tensor import TensorWiseINT8Layout
+        from dinkster_kitchen.tensor import TensorWiseINT8Layout
 
         x = torch.randn(32, 128, device="cuda", dtype=torch.float16)
         qdata, params = TensorWiseINT8Layout.quantize(x, is_weight=False)
@@ -336,7 +336,7 @@ class TestTensorWiseINT8Layout:
 
     def test_weight_dequantize_dtype(self, seed):
         """Dequantize restores original dtype."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         for dtype in (torch.float16, torch.bfloat16):
             w = torch.randn(64, 128, device="cuda", dtype=dtype)
@@ -347,7 +347,7 @@ class TestTensorWiseINT8Layout:
 
     def test_weight_roundtrip_error(self, seed):
         """Roundtrip error stays within INT8 quantization tolerance."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         w = torch.randn(128, 256, device="cuda", dtype=torch.bfloat16)
         qt = QuantizedTensor.from_float(w, "TensorWiseINT8Layout")
@@ -358,7 +358,7 @@ class TestTensorWiseINT8Layout:
 
     def test_state_dict_tensors_keys(self, seed):
         """state_dict_tensors returns '' and '_scale' keys."""
-        from comfy_kitchen.tensor import QuantizedTensor, TensorWiseINT8Layout
+        from dinkster_kitchen.tensor import QuantizedTensor, TensorWiseINT8Layout
 
         w = torch.randn(64, 64, device="cuda", dtype=torch.bfloat16)
         qt = QuantizedTensor.from_float(w, "TensorWiseINT8Layout")
@@ -370,7 +370,7 @@ class TestTensorWiseINT8Layout:
 
     def test_supports_fast_matmul(self):
         """supports_fast_matmul returns True on CUDA SM >= 7.5."""
-        from comfy_kitchen.tensor import TensorWiseINT8Layout
+        from dinkster_kitchen.tensor import TensorWiseINT8Layout
 
         result = TensorWiseINT8Layout.supports_fast_matmul()
         assert isinstance(result, bool)
@@ -380,7 +380,7 @@ class TestTensorWiseINT8Layout:
 
     def test_linear_dispatch(self, seed):
         """aten.linear dispatch fires and produces correct shape/dtype."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         x = torch.randn(4, 128, device="cuda", dtype=torch.bfloat16)
         w = torch.randn(64, 128, device="cuda", dtype=torch.bfloat16)
@@ -393,7 +393,7 @@ class TestTensorWiseINT8Layout:
 
     def test_linear_dispatch_uses_activation_dtype(self, seed):
         """aten.linear defaults output dtype to runtime activation dtype."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         x = torch.randn(4, 128, device="cuda", dtype=torch.float16)
         w = torch.randn(64, 128, device="cuda", dtype=torch.float32)
@@ -407,7 +407,7 @@ class TestTensorWiseINT8Layout:
 
     def test_mm_dispatch(self, seed):
         """aten.mm dispatch fires and produces correct shape."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         # mm: A [M,K] @ B [K,N] — store B as [K,N] so quantize/dequantize preserves shape
         a = torch.randn(8, 128, device="cuda", dtype=torch.bfloat16)
@@ -419,7 +419,7 @@ class TestTensorWiseINT8Layout:
 
     def test_mm_dispatch_uses_activation_dtype(self, seed):
         """aten.mm defaults output dtype to runtime activation dtype."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         a = torch.randn(8, 128, device="cuda", dtype=torch.float16)
         b = torch.randn(128, 64, device="cuda", dtype=torch.float32)
@@ -432,7 +432,7 @@ class TestTensorWiseINT8Layout:
 
     def test_addmm_dispatch(self, seed):
         """aten.addmm dispatch fires and produces correct shape/dtype."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         x = torch.randn(4, 128, device="cuda", dtype=torch.bfloat16)
         w = torch.randn(64, 128, device="cuda", dtype=torch.bfloat16)
@@ -446,7 +446,7 @@ class TestTensorWiseINT8Layout:
 
     def test_addmm_dispatch_uses_activation_dtype(self, seed):
         """aten.addmm defaults output dtype to runtime activation dtype."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         bias = torch.randn(64, device="cuda", dtype=torch.float32)
         x = torch.randn(4, 128, device="cuda", dtype=torch.float16)
@@ -461,8 +461,8 @@ class TestTensorWiseINT8Layout:
     @pytest.mark.parametrize("backend", get_capable_backends("int8_linear", "cuda"))
     def test_int8_linear_correctness(self, seed, backend):
         """Check int8_linear parity across all capable backends."""
-        import comfy_kitchen as ck
-        from comfy_kitchen.backends.eager.quantization import quantize_int8_tensorwise
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.backends.eager.quantization import quantize_int8_tensorwise
 
         x = torch.randn(128, 256, device="cuda", dtype=torch.float16)
         w = torch.randn(64, 256, device="cuda", dtype=torch.float16)
@@ -484,8 +484,8 @@ class TestTensorWiseINT8Layout:
         """CUDA int8_linear uses the single-row GEMV path correctly."""
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        import comfy_kitchen as ck
-        from comfy_kitchen.backends.eager.quantization import quantize_int8_tensorwise
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.backends.eager.quantization import quantize_int8_tensorwise
 
         x = torch.randn(1, 512, device="cuda", dtype=torch.bfloat16)
         w = torch.randn(384, 512, device="cuda", dtype=torch.bfloat16)
@@ -503,8 +503,8 @@ class TestTensorWiseINT8Layout:
         assert_values_close(out, ref_out, rtol=1e-2, atol=1e-2, name="int8_linear_cuda_single_row_gemv", max_mismatch_ratio=0.01)
 
     def test_public_api_quantize_tensorwise(self, seed):
-        """comfy_kitchen.quantize_int8_tensorwise op is reachable."""
-        import comfy_kitchen as ck
+        """dinkster_kitchen.quantize_int8_tensorwise op is reachable."""
+        import dinkster_kitchen as ck
 
         x = torch.randn(64, 128, device="cuda", dtype=torch.bfloat16)
         q, scale = ck.quantize_int8_tensorwise(x)
@@ -514,8 +514,8 @@ class TestTensorWiseINT8Layout:
         assert scale.numel() == 1
 
     def test_public_api_quantize_rowwise(self, seed):
-        """comfy_kitchen.quantize_int8_rowwise op is reachable."""
-        import comfy_kitchen as ck
+        """dinkster_kitchen.quantize_int8_rowwise op is reachable."""
+        import dinkster_kitchen as ck
 
         x = torch.randn(32, 128, device="cuda", dtype=torch.bfloat16)
         q, scale = ck.quantize_int8_rowwise(x)
@@ -525,8 +525,8 @@ class TestTensorWiseINT8Layout:
         assert scale.shape == (32, 1)
 
     def test_public_api_dequantize_simple(self, seed):
-        """comfy_kitchen.dequantize_int8_simple op is reachable."""
-        import comfy_kitchen as ck
+        """dinkster_kitchen.dequantize_int8_simple op is reachable."""
+        import dinkster_kitchen as ck
 
         x = torch.randn(32, 64, device="cuda", dtype=torch.bfloat16)
         q, scale = ck.quantize_int8_tensorwise(x)
@@ -538,7 +538,7 @@ class TestTensorWiseINT8Layout:
     @pytest.mark.parametrize("backend", get_capable_backends("dequantize_int8_simple", "cuda"))
     def test_dequantize_simple_backend_correctness(self, seed, backend):
         """CUDA INT8 dequantize matches eager for scalar and rowwise scales."""
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         x = torch.randn(32, 64, device="cuda", dtype=torch.bfloat16)
         q_scalar, scale_scalar = ck.quantize_int8_tensorwise(x)
@@ -559,19 +559,19 @@ class TestTensorWiseINT8Layout:
         """Direct fp16/bf16 dequant output matches the prior float32-then-cast behavior."""
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         x = torch.randn(64, 256, device="cuda", dtype=torch.bfloat16)
 
         with ck.registry.use_backend("cuda"):
             q_row, scale_row = ck.quantize_int8_rowwise(x)
-            ref_row = torch.ops.comfy_kitchen.dequantize_int8_simple(q_row, scale_row)
-            q_conv, scale_conv = torch.ops.comfy_kitchen.quantize_int8_convrot_weight(x, 256)
-            ref_conv = torch.ops.comfy_kitchen.dequantize_int8_convrot_weight(q_conv, scale_conv, 256)
+            ref_row = torch.ops.dinkster_kitchen.dequantize_int8_simple(q_row, scale_row)
+            q_conv, scale_conv = torch.ops.dinkster_kitchen.quantize_int8_convrot_weight(x, 256)
+            ref_conv = torch.ops.dinkster_kitchen.dequantize_int8_convrot_weight(q_conv, scale_conv, 256)
 
             for dtype, code in ((torch.float16, 1), (torch.bfloat16, 2)):
-                out_row = torch.ops.comfy_kitchen.dequantize_int8_simple_dtype(q_row, scale_row, code)
-                out_conv = torch.ops.comfy_kitchen.dequantize_int8_convrot_weight_dtype(q_conv, scale_conv, 256, code)
+                out_row = torch.ops.dinkster_kitchen.dequantize_int8_simple_dtype(q_row, scale_row, code)
+                out_conv = torch.ops.dinkster_kitchen.dequantize_int8_convrot_weight_dtype(q_conv, scale_conv, 256, code)
 
                 assert out_row.dtype == dtype
                 assert out_conv.dtype == dtype
@@ -579,9 +579,9 @@ class TestTensorWiseINT8Layout:
                 assert torch.equal(out_conv, ref_conv.to(dtype))
 
     def test_public_api_int8_linear(self, seed):
-        """comfy_kitchen.int8_linear op is reachable."""
-        import comfy_kitchen as ck
-        from comfy_kitchen.backends.eager.quantization import quantize_int8_tensorwise
+        """dinkster_kitchen.int8_linear op is reachable."""
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.backends.eager.quantization import quantize_int8_tensorwise
 
         x = torch.randn(4, 128, device="cuda", dtype=torch.bfloat16)
         w = torch.randn(64, 128, device="cuda", dtype=torch.bfloat16)
@@ -594,7 +594,7 @@ class TestTensorWiseINT8Layout:
 
     def test_convrot_hadamard_properties(self):
         """Verify _build_hadamard constructs correct orthogonal, symmetric matrix."""
-        from comfy_kitchen.tensor.int8_utils import _build_hadamard
+        from dinkster_kitchen.tensor.int8_utils import _build_hadamard
 
         # Test valid sizes
         for size in [4, 16, 64, 256]:
@@ -613,7 +613,7 @@ class TestTensorWiseINT8Layout:
 
     def test_convrot_param_validation(self):
         """Verify parameter combinations for convrot raise expected ValueErrors."""
-        from comfy_kitchen.tensor import TensorWiseINT8Layout
+        from dinkster_kitchen.tensor import TensorWiseINT8Layout
 
         w = torch.randn(64, 256, device="cuda", dtype=torch.float16)
 
@@ -627,7 +627,7 @@ class TestTensorWiseINT8Layout:
 
     def test_convrot_weight_roundtrip(self, seed):
         """Verify weight roundtrip (quantize -> dequantize) with convrot=True preserves values."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         w = torch.randn(128, 256, device="cuda", dtype=torch.bfloat16)
         # Using default convrot_groupsize=256
@@ -650,8 +650,8 @@ class TestTensorWiseINT8Layout:
         """CUDA ConvRot weight quantization preserves the weight after inverse rotation."""
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
-        from comfy_kitchen.tensor.int8_utils import _build_hadamard, _rotate_weight
+        from dinkster_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.tensor.int8_utils import _build_hadamard, _rotate_weight
 
         w = torch.randn(128, 256, device="cuda", dtype=torch.bfloat16)
         h = _build_hadamard(256, device=w.device, dtype=w.dtype)
@@ -667,14 +667,14 @@ class TestTensorWiseINT8Layout:
 
     def test_convrot_weight_dequantize_torch_op_roundtrip(self, seed):
         """The ConvRot dequant torch op preserves weights within INT8 tolerance."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         w = torch.randn(128, 256, device="cuda", dtype=torch.bfloat16)
         qt = QuantizedTensor.from_float(
             w, "TensorWiseINT8Layout", per_channel=True, convrot=True, convrot_groupsize=256
         )
 
-        dq = torch.ops.comfy_kitchen.dequantize_int8_convrot_weight(
+        dq = torch.ops.dinkster_kitchen.dequantize_int8_convrot_weight(
             qt._qdata, qt._params.scale, qt._params.convrot_groupsize
         ).to(w.dtype)
 
@@ -715,7 +715,7 @@ class TestTensorWiseINT8Layout:
 
     def test_convrot_divisibility(self, seed):
         """Verify error when channels are not divisible by convrot_groupsize."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         # in_features (250) not divisible by 256
         w = torch.randn(64, 250, device="cuda", dtype=torch.bfloat16)
@@ -726,7 +726,7 @@ class TestTensorWiseINT8Layout:
 
     def test_convrot_linear_mm_addmm_dispatch(self, seed):
         """Verify linear, mm, and addmm dispatch with convrot=True works and is highly accurate."""
-        from comfy_kitchen.tensor import QuantizedTensor
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         # Shapes must be compatible with group_size 64 (which is a valid power of 4)
         group_size = 64
@@ -775,8 +775,8 @@ class TestTensorWiseINT8Layout:
 
     def test_convrot_triton_fused_correctness(self, seed):
         """Verify that fused Triton ConvRot+Quantization matches the eager baseline."""
-        import comfy_kitchen as ck
-        from comfy_kitchen.tensor import QuantizedTensor
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.tensor import QuantizedTensor
 
         group_size = 64
         x = torch.randn(32, 128, device="cuda", dtype=torch.float16)
@@ -816,10 +816,10 @@ class TestTensorWisePublicAPI:
         torch.manual_seed(42)
 
     def test_public_api_quantize_tensorwise(self, seed, device):
-        """comfy_kitchen.quantize_int8_tensorwise op is reachable."""
+        """dinkster_kitchen.quantize_int8_tensorwise op is reachable."""
         import torch
 
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         x = torch.randn(64, 128, device=device, dtype=torch.bfloat16)
         q, scale = ck.quantize_int8_tensorwise(x)
@@ -829,10 +829,10 @@ class TestTensorWisePublicAPI:
         assert scale.numel() == 1
 
     def test_public_api_quantize_rowwise(self, seed, device):
-        """comfy_kitchen.quantize_int8_rowwise op is reachable."""
+        """dinkster_kitchen.quantize_int8_rowwise op is reachable."""
         import torch
 
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         x = torch.randn(32, 128, device=device, dtype=torch.bfloat16)
         q, scale = ck.quantize_int8_rowwise(x)
@@ -842,10 +842,10 @@ class TestTensorWisePublicAPI:
         assert scale.shape == (32, 1)
 
     def test_public_api_dequantize_simple(self, seed, device):
-        """comfy_kitchen.dequantize_int8_simple op is reachable."""
+        """dinkster_kitchen.dequantize_int8_simple op is reachable."""
         import torch
 
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         x = torch.randn(32, 64, device=device, dtype=torch.bfloat16)
         q, scale = ck.quantize_int8_tensorwise(x)
@@ -855,11 +855,11 @@ class TestTensorWisePublicAPI:
         assert dq.shape == x.shape
 
     def test_public_api_int8_linear(self, seed, device):
-        """comfy_kitchen.int8_linear op is reachable."""
+        """dinkster_kitchen.int8_linear op is reachable."""
         import torch
 
-        import comfy_kitchen as ck
-        from comfy_kitchen.backends.eager.quantization import quantize_int8_tensorwise
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.backends.eager.quantization import quantize_int8_tensorwise
 
         x = torch.randn(4, 128, device=device, dtype=torch.bfloat16)
         w = torch.randn(64, 128, device=device, dtype=torch.bfloat16)
@@ -874,8 +874,8 @@ class TestTensorWisePublicAPI:
         """Eager int8_linear supports single-row batches."""
         import torch
 
-        import comfy_kitchen as ck
-        from comfy_kitchen.backends.eager.quantization import quantize_int8_tensorwise
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.backends.eager.quantization import quantize_int8_tensorwise
 
         x = torch.randn(1, 128, device=device, dtype=torch.bfloat16)
         w = torch.randn(64, 128, device=device, dtype=torch.bfloat16)
@@ -891,8 +891,8 @@ class TestTensorWisePublicAPI:
         """Eager int8_linear pads K to int8 matmul's tile size."""
         import torch
 
-        import comfy_kitchen as ck
-        from comfy_kitchen.backends.eager.quantization import quantize_int8_tensorwise
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.backends.eager.quantization import quantize_int8_tensorwise
 
         x = torch.randn(17, 12, device=device, dtype=torch.bfloat16)
         w = torch.randn(64, 12, device=device, dtype=torch.bfloat16)
@@ -908,8 +908,8 @@ class TestTensorWisePublicAPI:
         """Eager int8_linear pads N to int8 matmul's tile size."""
         import torch
 
-        import comfy_kitchen as ck
-        from comfy_kitchen.backends.eager.quantization import quantize_int8_tensorwise
+        import dinkster_kitchen as ck
+        from dinkster_kitchen.backends.eager.quantization import quantize_int8_tensorwise
 
         x = torch.randn(17, 16, device=device, dtype=torch.bfloat16)
         w = torch.randn(1, 16, device=device, dtype=torch.bfloat16)

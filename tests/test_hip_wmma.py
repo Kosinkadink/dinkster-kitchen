@@ -7,20 +7,22 @@ skipped on RDNA2, which has none; see needs_wmma.
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.backends.eager import w4a8_int8 as eager_w4a8
-from comfy_kitchen.backends.eager.convrot_w4a4 import _unpack_int4_row_major
-from comfy_kitchen.backends.eager.group_norm_pad3d import group_norm_silu_pad3d as _eager_group_norm
-from comfy_kitchen.backends.eager.quantization import (
+import dinkster_kitchen as ck
+from dinkster_kitchen.backends.eager import w4a8_int8 as eager_w4a8
+from dinkster_kitchen.backends.eager.convrot_w4a4 import _unpack_int4_row_major
+from dinkster_kitchen.backends.eager.group_norm_pad3d import (
+    group_norm_silu_pad3d as _eager_group_norm,
+)
+from dinkster_kitchen.backends.eager.quantization import (
     quantize_and_rotate_rowwise as eager_quantize_and_rotate_rowwise,
 )
-from comfy_kitchen.backends.eager.quantization import (
+from dinkster_kitchen.backends.eager.quantization import (
     rotate_int8_convrot_weight as eager_rotate_int8_convrot_weight,
 )
-from comfy_kitchen.constraints import validate_function_call
-from comfy_kitchen.registry import registry
-from comfy_kitchen.tensor import AsymW4A8Int8Layout, QuantizedTensor
-from comfy_kitchen.tensor.int8_utils import _build_hadamard
+from dinkster_kitchen.constraints import validate_function_call
+from dinkster_kitchen.registry import registry
+from dinkster_kitchen.tensor import AsymW4A8Int8Layout, QuantizedTensor
+from dinkster_kitchen.tensor.int8_utils import _build_hadamard
 
 
 def _unavailable_reason() -> str | None:
@@ -45,7 +47,7 @@ def _has_wmma() -> bool:
     # needs_wmma test into a green skip.
     if not registry.is_available("hip"):
         return False
-    from comfy_kitchen.backends import hip as hip_backend
+    from dinkster_kitchen.backends import hip as hip_backend
 
     return hip_backend.has_wmma()
 
@@ -63,7 +65,7 @@ DEV = "cuda"
 
 @pytest.fixture
 def hip():
-    from comfy_kitchen.backends import hip as hip_backend
+    from dinkster_kitchen.backends import hip as hip_backend
 
     return hip_backend
 
@@ -414,7 +416,7 @@ def _gn_inputs(b, c, t, h, w, dtype, affine=True):
 def _no_eager_group_norm(monkeypatch):
     """The shapes below are all ones the kernel serves; an eager fallback would pass
     against an eager reference without testing anything."""
-    from comfy_kitchen.backends import hip as hip_backend
+    from dinkster_kitchen.backends import hip as hip_backend
 
     def _fail(*args, **kwargs):
         raise AssertionError("group_norm_silu_pad3d fell back to eager")
@@ -1383,7 +1385,7 @@ def test_w4a8_linear_dispatches_to_hip():
             "out_dtype": torch.bfloat16,
         },
     )
-    assert impl.__module__ == "comfy_kitchen.backends.hip"
+    assert impl.__module__ == "dinkster_kitchen.backends.hip"
 
     out = torch.nn.functional.linear(x, QuantizedTensor(qdata, "AsymW4A8Int8Layout", params))
     rel = (out.float() - (x @ w.t()).float()).norm() / (x @ w.t()).float().norm()
@@ -1481,7 +1483,7 @@ def test_dequantize_int8_convrot_weight_dtype_matches_eager(
         q, scale, group_size, output_dtype_code
     )
     with ck.use_backend("eager"):
-        ref = torch.ops.comfy_kitchen.dequantize_int8_convrot_weight_dtype(
+        ref = torch.ops.dinkster_kitchen.dequantize_int8_convrot_weight_dtype(
             q, scale, group_size, output_dtype_code
         )
 
@@ -1503,8 +1505,8 @@ def test_int8_dtype_dequant_custom_ops_do_not_fall_back_to_eager(hip, monkeypatc
     q = torch.randint(-128, 128, (5, 256), dtype=torch.int8, device=DEV)
     scale = torch.rand(5, 1, dtype=torch.float32, device=DEV) * 0.02
     with ck.use_backend("hip"):
-        simple = torch.ops.comfy_kitchen.dequantize_int8_simple_dtype(q, scale, 2)
-        convrot = torch.ops.comfy_kitchen.dequantize_int8_convrot_weight_dtype(
+        simple = torch.ops.dinkster_kitchen.dequantize_int8_simple_dtype(q, scale, 2)
+        convrot = torch.ops.dinkster_kitchen.dequantize_int8_convrot_weight_dtype(
             q, scale, 256, 2
         )
 
@@ -2064,7 +2066,7 @@ def test_svdquant_w4a4_beats_eager_against_fp32_truth(m, n, k, r, act_unsigned):
     and require HIP to be no worse.
     """
     torch.manual_seed(0)
-    from comfy_kitchen.backends.eager.svdquant import (
+    from dinkster_kitchen.backends.eager.svdquant import (
         _unpack_int4_row_major,
         _unpack_uint4_row_major,
     )
@@ -2126,7 +2128,7 @@ def test_no_hipblaslt_on_the_quantized_paths(monkeypatch):
     and an eager fallback would reach BLAS through torch.matmul/mm/bmm. Trap all of
     them so a silent fall-through cannot pass with an empty record.
     """
-    from comfy_kitchen.tensor import QuantizedTensor
+    from dinkster_kitchen.tensor import QuantizedTensor
 
     called = []
 
@@ -2163,7 +2165,7 @@ def test_no_hipblaslt_on_the_quantized_paths(monkeypatch):
     ck.int8_linear(x, w8, ws.reshape(-1), None, torch.bfloat16)
 
     # int4 ConvRot
-    from comfy_kitchen.backends import hip as hip_backend
+    from dinkster_kitchen.backends import hip as hip_backend
 
     qw, wsc = hip_backend.quantize_convrot_w4a4_weight(w, 256)
     hip_backend.convrot_w4a4_linear(x, qw, wsc, None, 256)
@@ -2184,7 +2186,7 @@ def test_no_hipblaslt_on_the_quantized_paths(monkeypatch):
 
 def test_hip_registers_on_this_device():
     """The backend registered for whatever supported AMD device is running the suite."""
-    from comfy_kitchen.backends import hip as hip_backend
+    from dinkster_kitchen.backends import hip as hip_backend
 
     arch = hip_backend._gfx_arch()
     assert arch in hip_backend._ARCH_SUPPORTED
@@ -2282,7 +2284,7 @@ def test_empty_inputs_do_not_launch_zero_grids(hip):
 @needs_wmma
 def test_scaled_mm_v2_declines_a_bias_it_cannot_index():
     """The epilogue indexes bias[col] with one dtype code; anything else falls back."""
-    from comfy_kitchen.scaled_mm_v2 import ScalingType, SwizzleType, _hip_fp8_gemm
+    from dinkster_kitchen.scaled_mm_v2 import ScalingType, SwizzleType, _hip_fp8_gemm
 
     a = (torch.randn(64, 128, device=DEV) / 8).to(torch.float8_e4m3fn)
     b = (torch.randn(128, 128, device=DEV) / 8).to(torch.float8_e4m3fn)

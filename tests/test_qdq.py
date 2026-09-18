@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.float_utils import (
+import dinkster_kitchen as ck
+from dinkster_kitchen.float_utils import (
     F4_E2M1_MAX,
     F8_E4M3_MAX,
     fp4_x2_to_f32,

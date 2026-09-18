@@ -1,6 +1,33 @@
-# Comfy Kitchen
+# Dinkster Kitchen
 
 Fast kernel library for Diffusion inference with multiple compute backends.
+
+## Dinkster fork
+
+This repository is the Dinkster fork of
+[Comfy-Org/comfy-kitchen](https://github.com/Comfy-Org/comfy-kitchen). The
+distribution is published as `dinkster-kitchen` and the importable package is
+renamed `dinkster_kitchen`, so this fork installs side by side with the
+upstream `comfy-kitchen` distribution without touching its files. Fork
+releases use the upstream version plus a `.postN` suffix (for example upstream
+`0.2.35` ships as fork `0.2.35.post1`) for fork-only changes made between
+upstream syncs.
+
+Sync upstream changes with:
+
+```bash
+git remote add upstream https://github.com/Comfy-Org/comfy-kitchen.git
+git fetch upstream
+git merge upstream/main
+```
+
+Expected merge conflicts are limited to the fork metadata that already diverges
+here: the project name, version and Homepage URL in `pyproject.toml`, and the
+repository gates in the `.github/workflows/` files. After merging, re-run the
+case-preserving token rename `comfy_kitchen` -> `dinkster_kitchen` (and
+`COMFY_KITCHEN` -> `DINKSTER_KITCHEN`) over the merged tree, because newly
+merged upstream files carry the upstream import name again, then build and run
+the test suite.
 
 ## Backend Capabilities Matrix
 
@@ -52,7 +79,7 @@ The `hip` backend implements the quantized paths with its own kernels: WMMA
 matrix-core GEMMs on RDNA3/RDNA3.5/RDNA4, and non-WMMA kernels (quantizers,
 INT8 dequantizers, RoPE and the fused RMSNorm+RoPE, AdaLN and RMS-AdaLN, the AWQ
 GEMV) that also run on RDNA2. It does not link or call hipBLAS/hipBLASLt; every
-matmul is compiled from the sources in `comfy_kitchen/backends/hip/`.
+matmul is compiled from the sources in `dinkster_kitchen/backends/hip/`.
 
 Both rope kernels address their inputs through the tensor's own strides, so a q/k
 pair permuted or sliced out of a packed qkv is read where it lies rather than
@@ -88,7 +115,7 @@ tensor's own device.
 A request outside a kernel's domain (swizzled operands, scaling other than
 tensor-wise, a K that is not a multiple of 16) falls back to torch or eager.
 NVFP4 and MXFP8 stay on eager everywhere: RDNA has neither fp4 WMMA nor
-microscaling hardware. Set `COMFY_KITCHEN_DISABLE_HIP=1` to remove the backend
+microscaling hardware. Set `DINKSTER_KITCHEN_DISABLE_HIP=1` to remove the backend
 from dispatch.
 
 ### Building
@@ -116,7 +143,7 @@ CUDA only. This avoids compiling an unused multi-architecture HIP binary on an
 NVIDIA workstation. Request a combined build explicitly:
 
 ```bash
-COMFY_KITCHEN_BUILD_HIP=1 pip install .
+DINKSTER_KITCHEN_BUILD_HIP=1 pip install .
 ```
 
 Architectures default to the validated GPUs the build machine can see, or to
@@ -139,8 +166,8 @@ $env:COMFY_HIP_ARCHS = "gfx1201"; pip install .
 AMD GPUs but none is RDNA2/3/3.5/4 (CDNA has MFMA, not WMMA), the extension is
 skipped rather than built (seeing no GPU at all falls back to the full target list
 above instead);
-`COMFY_KITCHEN_BUILD_HIP=1` requests HIP explicitly (and makes an unsupported
-visible AMD GPU a hard error), while `COMFY_KITCHEN_BUILD_NO_HIP=1` suppresses
+`DINKSTER_KITCHEN_BUILD_HIP=1` requests HIP explicitly (and makes an unsupported
+visible AMD GPU a hard error), while `DINKSTER_KITCHEN_BUILD_NO_HIP=1` suppresses
 the backend entirely.
 
 Architecture overrides are exact and fail closed. A compiler-recognized target
@@ -163,7 +190,7 @@ The library provides `QuantizedTensor`, a `torch.Tensor` subclass that transpare
 | `TensorCoreMXFP8Layout`| MXFP8 E4M3   | SM ≥ 10.0 (Blackwell) | Block quantization with 32-element blocks, E8M0 scales |
 
 ```python
-from comfy_kitchen.tensor import QuantizedTensor, TensorCoreFP8Layout, TensorCoreNVFP4Layout
+from dinkster_kitchen.tensor import QuantizedTensor, TensorCoreFP8Layout, TensorCoreNVFP4Layout
 
 # Quantize a tensor
 x = torch.randn(128, 256, device="cuda", dtype=torch.bfloat16)
@@ -183,10 +210,10 @@ dq = qt.dequantize()
 
 ```bash
 # Install default (Linux/Windows/MacOS)
-pip install comfy-kitchen
+pip install dinkster-kitchen
 
 # Install with CUBLAS for NVFP4 (+Blackwell)
-pip install comfy-kitchen[cublas]
+pip install dinkster-kitchen[cublas]
 ```
 
 ### Package Variants
@@ -249,7 +276,7 @@ python setup.py build_ext --debug-build --lineinfo bdist_wheel
 ## Quick Start
 
 ```python
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 import torch
 
 # Automatic backend selection (hip -> cuda -> triton -> eager)
@@ -304,7 +331,7 @@ The registry validates inputs against these constraints **before** calling the b
 ```python
 # Debug logging to see backend selection
 import logging
-logging.getLogger("comfy_kitchen.dispatch").setLevel(logging.DEBUG)
+logging.getLogger("dinkster_kitchen.dispatch").setLevel(logging.DEBUG)
 ```
 
 

@@ -16,11 +16,11 @@ import math
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.backends import cuda as cuda_backend
-from comfy_kitchen.backends import hip as hip_backend
-from comfy_kitchen.backends.eager.sol_attn import sol_attn as sol_attn_eager
-from comfy_kitchen.exceptions import NoCapableBackendError
+import dinkster_kitchen as ck
+from dinkster_kitchen.backends import cuda as cuda_backend
+from dinkster_kitchen.backends import hip as hip_backend
+from dinkster_kitchen.backends.eager.sol_attn import sol_attn as sol_attn_eager
+from dinkster_kitchen.exceptions import NoCapableBackendError
 
 
 def _fused_backend():
@@ -189,7 +189,7 @@ def test_output_strides_agree_across_backends():
     eager_strides = sol_attn_eager(v.float(), v.float(), v.float(), tau=1.4).stride()
     with FakeTensorMode():
         fv = torch.empty(v.shape, dtype=v.dtype, device=v.device)
-        fake_strides = torch.ops.comfy_kitchen.sol_attn(
+        fake_strides = torch.ops.dinkster_kitchen.sol_attn(
             fv, fv, fv, tau=1.4, scale=None, sink_blocks=[0, 0], sink_q=[0, 0],
             key_bias=None, topk_ratio=0.0, tail=True, block_len=None,
             coarse_gate=None).stride()
@@ -561,7 +561,7 @@ def test_token_aug_validation_and_no_tail():
 
 
 def test_chunked_producer_public_entry():
-    """comfy_kitchen.sol_attn_chunked is the registered backend's function."""
+    """dinkster_kitchen.sol_attn_chunked is the registered backend's function."""
     expected = hip_backend if ck.registry.is_available("hip") else cuda_backend
     assert "sol_attn_chunked" in ck.__all__
     assert ck.sol_attn_chunked is expected.sol_attn_chunked
@@ -759,7 +759,7 @@ def test_chunked_producer_topk():
 def _padded_case(t=64 * 40, h=4, seed=21, b=1):
     """Random live-row counts per block (the last entry may exceed the ragged
     tail and gets clamped); dead rows hold garbage the kernel must ignore."""
-    from comfy_kitchen.backends.eager.sol_attn import _block_lengths
+    from dinkster_kitchen.backends.eager.sol_attn import _block_lengths
     q, k, v = _qkv(b, t, h, seed=seed)
     g = torch.Generator(device="cuda").manual_seed(seed)
     n = (t + 63) // 64
@@ -816,7 +816,7 @@ def test_no_tail_matches_eager():
 
 def _coarse_reference(q, k, v, valid, block_len, gate, scale=HD ** -0.5):
     """Independent per-block loop: masked dense attention plus gate * coarse term."""
-    from comfy_kitchen.backends.eager.sol_attn import _block_lengths
+    from dinkster_kitchen.backends.eager.sol_attn import _block_lengths
     t = q.shape[1]
     n = (t + 63) // 64
     lengths = _block_lengths(t, n, "cuda", block_len)
@@ -862,7 +862,7 @@ def test_coarse_gate_batch():
 def test_topk_budget_excludes_sinks():
     """Sink blocks are always exact, so the top-k budget ranks and counts only
     the other blocks; a sink range running past n counts only what exists."""
-    from comfy_kitchen.backends.eager.sol_attn import _topk_count
+    from dinkster_kitchen.backends.eager.sol_attn import _topk_count
 
     _topk_from_pooled = backend._topk_from_pooled
     g = torch.Generator(device="cuda").manual_seed(2)
