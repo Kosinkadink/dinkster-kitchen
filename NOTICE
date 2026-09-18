@@ -58,10 +58,10 @@ Website: https://github.com/pytorch/ao
 
 Portions of the following files are derived from PyTorch AO:
 
-- comfy_kitchen/backends/eager/quantization.py
+- dinkster_kitchen/backends/eager/quantization.py
   Source: https://github.com/pytorch/ao/blob/main/torchao/prototype/mx_formats/nvfp4_tensor.py
 
-- comfy_kitchen/float_utils.py (_f32_to_floatx_unpacked, _floatx_unpacked_to_f32)
+- dinkster_kitchen/float_utils.py (_f32_to_floatx_unpacked, _floatx_unpacked_to_f32)
   Source: https://github.com/pytorch/ao/blob/main/torchao/prototype/mx_formats/custom_cast.py
 
 BSD 3-Clause License:
@@ -99,7 +99,7 @@ License: Apache-2.0
 Website: https://github.com/thu-ml/SageAttention
 
 Portions of the CUDA attention and quantization kernels under
-comfy_kitchen/backends/cuda/sage_attention/ are derived from SageAttention
+dinkster_kitchen/backends/cuda/sage_attention/ are derived from SageAttention
 commit d1a57a546c3d395b1ffcbeecc66d81db76f3b4b5.
 
 ================================================================================

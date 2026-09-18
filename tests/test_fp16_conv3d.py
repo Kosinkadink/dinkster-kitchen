@@ -13,7 +13,7 @@ import pytest
 import torch
 from torch.nn import functional
 
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 from tests.conftest import cuda_backend_available, fp16_accum_tol, rel_err
 
 CL3D = torch.channels_last_3d
@@ -52,7 +52,7 @@ class TestFp16Conv3d:
     def test_matches_fp32_accum_reference(self, c, k, d, h, w, ksize, stride, with_bias, with_residual, seed, cuda_available):
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         x, weight, bias, residual = _inputs(c, k, d, h, w, ksize, with_bias=with_bias, with_residual=with_residual, stride=stride)
         got = cuda_backend._cutlass_fp16_conv3d(x, weight, bias, residual, list(stride))
@@ -68,7 +68,7 @@ class TestFp16Conv3d:
         served by the 64-row ones (which beat cuDNN there by 2x)."""
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         x, weight, bias, residual = _inputs(512, 512, 7, 18, 18, (3, 3, 3), with_residual=True)
         got = cuda_backend._cutlass_fp16_conv3d(x, weight, bias, residual, [1, 1, 1])
@@ -81,7 +81,7 @@ class TestFp16Conv3d:
         the public op must still return the right answer."""
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         x, weight, bias, residual = _inputs(64, 64, 3, 6, 6, (3, 3, 3), with_residual=True)
         assert cuda_backend._cutlass_fp16_conv3d(x, weight, bias, residual, [1, 1, 1]) is None
@@ -94,7 +94,7 @@ class TestFp16Conv3d:
         and served; the padded taps must contribute nothing."""
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         x = torch.randn(1, 3, 5, 130, 130, dtype=torch.float16, device="cuda")
         weight = torch.randn(128, 3, 3, 3, 3, dtype=torch.float16, device="cuda") * 0.1
@@ -113,7 +113,7 @@ class TestFp16Conv3d:
     def test_residual_shape_mismatch_falls_back(self, seed, cuda_available):
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         x, weight, bias, residual = _inputs(128, 128, 5, 130, 130, (3, 3, 3), with_residual=True)
         assert cuda_backend._cutlass_fp16_conv3d(x, weight, bias, residual[:, :64], [1, 1, 1]) is None

@@ -6,7 +6,7 @@ epilogue."""
 import pytest
 import torch
 
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 from tests.conftest import get_capable_backends, rel_err
 
 _GROUP = 256

@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from comfy_kitchen.tensor import (
+from dinkster_kitchen.tensor import (
     QuantizedTensor,
     TensorCoreFP8Layout,
     TensorCoreNVFP4Layout,

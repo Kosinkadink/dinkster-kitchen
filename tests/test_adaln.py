@@ -5,7 +5,7 @@ import pytest
 import torch
 from torch.nn import functional
 
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 from tests.conftest import assert_values_close, get_capable_backends
 
 # ---------------------------------------------------------------------------

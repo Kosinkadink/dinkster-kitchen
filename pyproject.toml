@@ -37,9 +37,6 @@ Homepage = "https://github.com/Kosinkadink/dinkster-kitchen"
 cublas = [
     "nvidia-cublas>=13.0.0",
 ]
-sage = [
-    "dinkster-sageattention==2.2.0.post1",
-]
 dev = [
     "pytest>=7.0.0",
     "pytest-benchmark>=4.0.0",
@@ -56,12 +53,12 @@ include-package-data = false
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["comfy_kitchen*"]
+include = ["dinkster_kitchen*"]
 exclude = ["tests*"]
 
 [tool.setuptools.package-data]
-"comfy_kitchen.backends.cuda" = ["*.cuh", "*.h"]
-"comfy_kitchen.backends.hip" = ["architectures.json"]
+"dinkster_kitchen.backends.cuda" = ["*.cuh", "*.h"]
+"dinkster_kitchen.backends.hip" = ["architectures.json"]
 
 [tool.ruff]
 # Set the maximum line length to 100.

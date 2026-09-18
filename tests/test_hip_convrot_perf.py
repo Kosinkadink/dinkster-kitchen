@@ -13,13 +13,13 @@ import time
 import pytest
 import torch
 
-from comfy_kitchen.backends.eager.quantization import (
+from dinkster_kitchen.backends.eager.quantization import (
     DTYPE_TO_CODE,
 )
-from comfy_kitchen.backends.eager.quantization import (
+from dinkster_kitchen.backends.eager.quantization import (
     quantize_and_rotate_rowwise as eager_quantize_and_rotate_rowwise,
 )
-from comfy_kitchen.tensor.int8_utils import _build_hadamard
+from dinkster_kitchen.tensor.int8_utils import _build_hadamard
 from tests.test_hip_wmma import DEV, _unavailable_reason, needs_wmma
 
 _UNAVAILABLE = _unavailable_reason()
@@ -170,7 +170,7 @@ def _bench_eager_convrot_quant(
 
 @pytest.fixture
 def hip():
-    from comfy_kitchen.backends import hip as hip_backend
+    from dinkster_kitchen.backends import hip as hip_backend
 
     return hip_backend
 

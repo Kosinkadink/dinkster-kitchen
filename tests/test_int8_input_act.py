@@ -6,8 +6,8 @@ import pytest
 import torch
 from torch.nn import functional
 
-import comfy_kitchen as ck
-from comfy_kitchen.tensor.int8_utils import _build_hadamard
+import dinkster_kitchen as ck
+from dinkster_kitchen.tensor.int8_utils import _build_hadamard
 from tests.conftest import cuda_backend_available, get_capable_backends, rel_err
 
 _GROUP = 256
@@ -40,7 +40,7 @@ class TestInputActQuantizer:
         """
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         h = torch.randn(shape, dtype=dtype, device="cuda") * 2.0
         exact_q, _ = _exact_fp64(h)
@@ -187,7 +187,7 @@ class TestSwiGLUInputAct:
     def test_at_least_as_accurate_as_eager_chain(self, dtype, shape, seed, cuda_available):
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         m, k = shape
         h = torch.randn((m, 2 * k), dtype=dtype, device="cuda") * 2.0
@@ -284,7 +284,7 @@ class TestRmsNormInputAct:
     def test_at_least_as_accurate_as_eager_chain(self, dtype, shape, seed, cuda_available):
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         m, k = shape
         h = torch.randn((m, k), dtype=dtype, device="cuda") * 2.0

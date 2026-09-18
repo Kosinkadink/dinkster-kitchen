@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-4.13.6-linux-x86_64-cuda13-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'comfy_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
+          key: ccache-4.13.6-linux-x86_64-cuda13-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'dinkster_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-4.13.6-linux-x86_64-cuda13-
       - name: Set up Python 3.12
@@ -114,7 +114,7 @@ jobs:
             LD_LIBRARY_PATH=/usr/local/cuda-13.0/lib64:/opt/rocm/lib:/opt/rocm/lib64:$LD_LIBRARY_PATH
             LIBRARY_PATH=/usr/local/cuda-13.0/lib64/stubs:$LIBRARY_PATH
             CMAKE_GENERATOR=Ninja
-            COMFY_KITCHEN_BUILD_HIP=1
+            DINKSTER_KITCHEN_BUILD_HIP=1
             COMFY_CUDA_COMPILER_LAUNCHER=ccache
             COMFY_CXX_COMPILER_LAUNCHER=ccache
             CCACHE_DIR=/host${{ github.workspace }}/.ccache
@@ -182,11 +182,11 @@ jobs:
               with zipfile.ZipFile(wheel) as zf:
                   names = zf.namelist()
               has_cuda = any(
-                  name.startswith("comfy_kitchen/backends/cuda/_C") and name.endswith(".so")
+                  name.startswith("dinkster_kitchen/backends/cuda/_C") and name.endswith(".so")
                   for name in names
               )
               has_hip = any(
-                  name.startswith("comfy_kitchen/backends/hip/_C") and name.endswith(".so")
+                  name.startswith("dinkster_kitchen/backends/hip/_C") and name.endswith(".so")
                   for name in names
               )
               print(f"{wheel.name}: cuda={has_cuda} hip={has_hip}")
@@ -240,7 +240,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-4.13.6-linux-aarch64-cuda13-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
+          key: ccache-4.13.6-linux-aarch64-cuda13-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-4.13.6-linux-aarch64-cuda13-
       - name: Set up Python 3.12
@@ -368,7 +368,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-windows-x86_64-cuda13-py${{ matrix.python-version }}-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'comfy_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
+          key: ccache-windows-x86_64-cuda13-py${{ matrix.python-version }}-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'dinkster_kitchen/backends/hip/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-windows-x86_64-cuda13-py${{ matrix.python-version }}-
             ccache-windows-x86_64-cuda13-
@@ -475,7 +475,7 @@ jobs:
       - name: Build CUDA+HIP wheel
         shell: bash
         env:
-          COMFY_KITCHEN_BUILD_HIP: "1"
+          DINKSTER_KITCHEN_BUILD_HIP: "1"
         run: |
           # The explicit HIP opt-in emits cuda/_C* plus hip/_C* into one wheel.
           # Python 3.12 produces an abi3 wheel (both extensions are built
@@ -509,11 +509,11 @@ jobs:
               with zipfile.ZipFile(wheel) as zf:
                   names = zf.namelist()
                   pyds = [n for n in names
-                          if n.startswith("comfy_kitchen/backends/") and n.endswith(".pyd")]
+                          if n.startswith("dinkster_kitchen/backends/") and n.endswith(".pyd")]
 
                   def has(backend):
                       return any(
-                          n.startswith(f"comfy_kitchen/backends/{backend}/_C")
+                          n.startswith(f"dinkster_kitchen/backends/{backend}/_C")
                           and n.endswith(".pyd")
                           for n in names
                       )
@@ -674,7 +674,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ccache
-          key: ccache-windows-arm64-cuda13.4-${{ hashFiles('setup.py', 'comfy_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
+          key: ccache-windows-arm64-cuda13.4-${{ hashFiles('setup.py', 'dinkster_kitchen/backends/cuda/**', 'third_party/cutlass/.git') }}
           restore-keys: |
             ccache-windows-arm64-cuda13.4-
 
@@ -988,8 +988,8 @@ jobs:
   # above and attaches them plus a SHA-256 manifest to a GitHub Release. It
   # authenticates to PyPI with OIDC through the pypi environment (no token
   # secret, no repository_url override), and the name guards below refuse any
-  # wheel whose basename is not a dinkster_kitchen release wheel, so an
-  # upstream comfy_kitchen wheel can never be uploaded from this job.
+  # wheel whose basename is not a dinkster_kitchen release wheel, so another
+  # distribution's wheel can never be uploaded from this job.
   publish_release:
     name: Publish dinkster-kitchen release
     needs: [build_wheels_linux, build_wheels_linux_arm64, build_wheels_windows, build_wheels_windows_arm, test_linux, test_windows, test_windows_arm]
@@ -1059,6 +1059,7 @@ jobs:
           import json
           import os
           import tomllib
+          import zipfile
           from pathlib import Path
 
           with open("pyproject.toml", "rb") as handle:
@@ -1096,6 +1097,23 @@ jobs:
                   return platform_tag
               return None
 
+          # The dist-info METADATA is what pip installs and PyPI records, so the
+          # wheel's stated identity must match the release on top of the filename.
+          def metadata_name_and_version(archive):
+              members = [n for n in archive.namelist() if n.endswith(".dist-info/METADATA")]
+              if len(members) != 1:
+                  raise SystemExit(
+                      f"expected exactly one dist-info METADATA, found {len(members)}"
+                  )
+              found = {}
+              for line in archive.read(members[0]).decode("utf-8").splitlines():
+                  field, separator, value = line.partition(":")
+                  if separator and field.strip().lower() in ("name", "version"):
+                      found.setdefault(field.strip().lower(), value.strip())
+                  if len(found) == 2:
+                      break
+              return found.get("name"), found.get("version")
+
           # Flatten the downloaded artifacts into dist/, rejecting non-wheel
           # files, non-fork wheel names and filenames repeated across artifacts.
           dist = Path("dist")
@@ -1125,6 +1143,13 @@ jobs:
               if name != "dinkster_kitchen" or wheel_version != version:
                   raise SystemExit(
                       f"refusing wheel that is not dinkster-kitchen {version}: {wheel.name}"
+                  )
+              with zipfile.ZipFile(wheel) as archive:
+                  metadata_name, metadata_version = metadata_name_and_version(archive)
+              if metadata_name != "dinkster-kitchen" or metadata_version != version:
+                  raise SystemExit(
+                      f"refusing wheel whose METADATA is not dinkster-kitchen {version}: "
+                      f"{wheel.name} (Name={metadata_name!r}, Version={metadata_version!r})"
                   )
               slot = platform_slot(platform_tag)
               if slot is None:

@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch.nn import functional
 
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 from tests.conftest import rel_err
 
 B, HV, HK, DK, DV, HD, KS = 2, 4, 2, 128, 128, 256, 4

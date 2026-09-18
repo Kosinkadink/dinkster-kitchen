@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.exceptions import (
+import dinkster_kitchen as ck
+from dinkster_kitchen.exceptions import (
     BackendNotFoundError,
     BackendNotImplementedError,
     NoCapableBackendError,
@@ -11,7 +11,7 @@ from comfy_kitchen.exceptions import (
 
 class TestBackendSystem:
     def test_list_backends(self):
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         backends = ck.list_backends()
 
@@ -25,13 +25,13 @@ class TestBackendSystem:
         assert "capabilities" in backends["eager"]
 
     def test_backend_priority(self):
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         ck.set_backend_priority(["eager", "cuda", "triton"])
         ck.set_backend_priority(["cuda", "triton", "eager"])
 
     def test_disable_enable_backend(self):
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         # Disable triton
         ck.disable_backend("triton")
@@ -45,7 +45,7 @@ class TestBackendSystem:
 
     def test_int8_capabilities_listed(self):
         """Test that int8 operations are listed in backend capabilities."""
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
         backends = ck.list_backends()
 
         # Check eager
@@ -62,7 +62,7 @@ class TestBackendSystem:
 
     def test_backend_context_manager_override(self, small_tensor):
         """Test that use_backend context manager correctly overrides backend selection."""
-        import comfy_kitchen as ck
+        import dinkster_kitchen as ck
 
         scale = torch.tensor([1.0], device=small_tensor.device)
 

@@ -11,7 +11,7 @@ grows with K: rounding error compounds roughly with sqrt(K) * 2^-11.
 import pytest
 import torch
 
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 from tests.conftest import cuda_backend_available, fp16_accum_tol, rel_err
 
 
@@ -122,7 +122,7 @@ class TestFp16Linear:
         runs cuBLAS; the public op stays correct either way."""
         if not cuda_backend_available():
             pytest.skip("compiled CUDA backend required")
-        from comfy_kitchen.backends import cuda as cuda_backend
+        from dinkster_kitchen.backends import cuda as cuda_backend
 
         x = torch.randn(m, k, dtype=torch.float16, device="cuda")
         w = torch.randn(n, k, dtype=torch.float16, device="cuda") * 0.02

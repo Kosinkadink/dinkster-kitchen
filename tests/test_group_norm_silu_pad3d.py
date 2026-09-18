@@ -5,8 +5,8 @@
 import pytest
 import torch
 
-import comfy_kitchen as ck
-from comfy_kitchen.backends.eager.group_norm_pad3d import group_norm_silu_pad3d as eager_ref
+import dinkster_kitchen as ck
+from dinkster_kitchen.backends.eager.group_norm_pad3d import group_norm_silu_pad3d as eager_ref
 from tests.conftest import rel_err
 
 CL3D = torch.channels_last_3d

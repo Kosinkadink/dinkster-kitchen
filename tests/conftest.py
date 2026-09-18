@@ -4,7 +4,7 @@ import sys
 import pytest
 import torch
 
-import comfy_kitchen as ck
+import dinkster_kitchen as ck
 
 
 def pytest_configure(config):
@@ -34,7 +34,7 @@ def restore_backend_selection():
     later dispatch assertions get triton or eager instead of failing on the
     backend that actually changed it.
     """
-    from comfy_kitchen.registry import registry
+    from dinkster_kitchen.registry import registry
 
     priority = list(registry._priority)
     disabled = set(registry._disabled)

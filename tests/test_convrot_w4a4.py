@@ -5,11 +5,11 @@ import pytest
 import torch
 import torch.nn.functional as functional
 
-import comfy_kitchen as ck
-from comfy_kitchen.backends import cuda as cuda_backend
-from comfy_kitchen.backends.eager.svdquant import _unpack_int4_row_major
-from comfy_kitchen.tensor import QuantizedTensor
-from comfy_kitchen.tensor.convrot_w4a4 import (
+import dinkster_kitchen as ck
+from dinkster_kitchen.backends import cuda as cuda_backend
+from dinkster_kitchen.backends.eager.svdquant import _unpack_int4_row_major
+from dinkster_kitchen.tensor import QuantizedTensor
+from dinkster_kitchen.tensor.convrot_w4a4 import (
     convrot_w4a4_linear,
     dequantize_convrot_w4a4_weight,
     quantize_convrot_w4a4_weight,

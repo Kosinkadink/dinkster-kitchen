@@ -31,12 +31,12 @@ if "--no-cuda" in sys.argv:
 
 # HIP is automatic on a ROCm-only build. --hip also adds it to a CUDA build and
 # turns a missing compiler into an error; --no-hip suppresses it.
-BUILD_HIP = os.getenv("COMFY_KITCHEN_BUILD_HIP") == "1"
+BUILD_HIP = os.getenv("DINKSTER_KITCHEN_BUILD_HIP") == "1"
 if "--hip" in sys.argv:
     BUILD_HIP = True
     sys.argv.remove("--hip")
 
-BUILD_NO_HIP = os.getenv("COMFY_KITCHEN_BUILD_NO_HIP") == "1"
+BUILD_NO_HIP = os.getenv("DINKSTER_KITCHEN_BUILD_NO_HIP") == "1"
 if "--no-hip" in sys.argv:
     BUILD_NO_HIP = True
     sys.argv.remove("--no-hip")
@@ -313,7 +313,7 @@ def get_cuda_path() -> tuple[pathlib.Path, pathlib.Path] | None:
 HIP_ARCH_GROUP_NAMES = ("elementwise_only", "wmma_gfx11", "wmma_gfx12")
 HIP_ARCH_MANIFEST_PATH = (
     pathlib.Path(__file__).resolve().parent
-    / "comfy_kitchen"
+    / "dinkster_kitchen"
     / "backends"
     / "hip"
     / "architectures.json"
@@ -582,13 +582,13 @@ def setup_hip_extension() -> CMakeExtension | None:
             print(f"No AMD GPU visible; building for the default {';'.join(archs)}")
 
     root_dir = pathlib.Path(__file__).resolve().parent
-    hip_backend_dir = root_dir / "comfy_kitchen" / "backends" / "hip"
+    hip_backend_dir = root_dir / "dinkster_kitchen" / "backends" / "hip"
     if not hip_backend_dir.exists():
         raise RuntimeError(f"HIP backend directory not found: {hip_backend_dir}")
 
-    print("Building HIP extension with CMake + nanobind: comfy_kitchen.backends.hip._C")
+    print("Building HIP extension with CMake + nanobind: dinkster_kitchen.backends.hip._C")
     return CMakeExtension(
-        name="comfy_kitchen.backends.hip._C",
+        name="dinkster_kitchen.backends.hip._C",
         source_dir=str(hip_backend_dir),
         backend="hip",
         hip_archs=";".join(archs),
@@ -670,16 +670,16 @@ def setup_cuda_extension() -> CMakeExtension | None:
         raise RuntimeError(f"ERROR: {e}") from e
 
     root_dir = pathlib.Path(__file__).resolve().parent
-    cuda_backend_dir = root_dir / "comfy_kitchen" / "backends" / "cuda"
+    cuda_backend_dir = root_dir / "dinkster_kitchen" / "backends" / "cuda"
 
     if not cuda_backend_dir.exists():
         raise RuntimeError(f"WARNING: CUDA backend directory not found: {cuda_backend_dir}")
 
-    print("Building CUDA extension with CMake + nanobind: comfy_kitchen.backends.cuda._C")
+    print("Building CUDA extension with CMake + nanobind: dinkster_kitchen.backends.cuda._C")
 
     # Create CMake extension pointing to the CUDA backend directory
     ext_module = CMakeExtension(
-        name="comfy_kitchen.backends.cuda._C",
+        name="dinkster_kitchen.backends.cuda._C",
         source_dir=str(cuda_backend_dir),
     )
 
@@ -723,7 +723,7 @@ def get_extensions() -> list[setuptools.Extension]:
 
     if not extensions:
         print("\n" + "=" * 80)
-        print("Installing comfy_kitchen without a native backend")
+        print("Installing dinkster_kitchen without a native backend")
         print("Available backends: eager, triton (if installed)")
         print("=" * 80 + "\n")
 
@@ -758,7 +758,7 @@ def get_cmdclass(has_extensions):
 
 def get_packages():
     if BUILD_NO_CUDA:
-        cuda_dir = pathlib.Path("comfy_kitchen/backends/cuda")
+        cuda_dir = pathlib.Path("dinkster_kitchen/backends/cuda")
         cuda_backup = pathlib.Path("cuda_backup_temp_build")
 
         if cuda_dir.exists():
@@ -787,12 +787,13 @@ if BUILD_NO_CUDA and not extensions:
         pyproject = tomllib.load(f)
 
     project_meta = pyproject.get("project", {})
+    name = project_meta["name"]
     version = project_meta["version"]
     description = project_meta.get("description", "")
 
     setup_kwargs.update({
         "packages": get_packages(),
-        "name": "comfy-kitchen",
+        "name": name,
         "version": version,
         "description": f"{description} (CPU-only)",
         "include_package_data": False,
