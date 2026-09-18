@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - "dev/**"
+    tags:
+      - "sageattention-2.2.0.post1"
     paths:
       - ".github/workflows/build-sageattention-wheels.yml"
       - "sageattention/**"
@@ -181,3 +183,34 @@ jobs:
           name: sageattention-windows-x86_64
           path: sageattention/build/source/dist/*.whl
           if-no-files-found: error
+
+  publish:
+    name: Publish managed SageAttention wheels to PyPI
+    needs: [build_linux, build_windows]
+    if: >-
+      github.repository == 'Kosinkadink/dinkster-kitchen' &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/tags/sageattention-2.2.0.post1'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download Linux wheel
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: sageattention-manylinux-x86_64
+          path: dist
+
+      - name: Download Windows wheel
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: sageattention-windows-x86_64
+          path: dist
+
+      - name: List wheels to publish
+        run: ls -la dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
