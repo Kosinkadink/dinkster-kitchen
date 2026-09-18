@@ -2,6 +2,27 @@
 
 Fast kernel library for Diffusion inference with multiple compute backends.
 
+## Dinkster fork
+
+This repository is the Dinkster fork of
+[Comfy-Org/comfy-kitchen](https://github.com/Comfy-Org/comfy-kitchen). The
+distribution is published as `dinkster-kitchen`; the importable package stays
+`comfy_kitchen`, so all code examples here work unchanged. Fork releases use the
+upstream version plus a `.postN` suffix (for example upstream `0.2.35` ships as
+fork `0.2.35.post1`) for fork-only changes made between upstream syncs.
+
+Sync upstream changes with:
+
+```bash
+git remote add upstream https://github.com/Comfy-Org/comfy-kitchen.git
+git fetch upstream
+git merge upstream/main
+```
+
+Expected merge conflicts are limited to the fork metadata that already diverges
+here: the project name, version and Homepage URL in `pyproject.toml`, and the
+repository gates in the `.github/workflows/` files.
+
 ## Backend Capabilities Matrix
 
 | Function                    | eager | cuda | triton | hip |

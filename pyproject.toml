@@ -15,8 +15,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "comfy-kitchen"
-version = "0.2.35"
+name = "dinkster-kitchen"
+version = "0.2.35.post1"
 description = "Fast Kernel Library for ComfyUI with multiple compute backends"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,11 +31,14 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/Comfy-Org/comfy-kitchen"
+Homepage = "https://github.com/Kosinkadink/dinkster-kitchen"
 
 [project.optional-dependencies]
 cublas = [
     "nvidia-cublas>=13.0.0",
+]
+sage = [
+    "dinkster-sageattention==2.2.0.post1",
 ]
 dev = [
     "pytest>=7.0.0",
