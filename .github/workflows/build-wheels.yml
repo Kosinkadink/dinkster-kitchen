@@ -11,12 +11,12 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
   build_wheels_linux:
     name: Build Linux wheels
+    if: github.repository == 'Comfy-Org/comfy-kitchen'
     runs-on: ubuntu-22.04
 
     steps:
@@ -227,6 +227,7 @@ jobs:
 
   build_wheels_linux_arm64:
     name: Build Linux ARM64 wheels
+    if: github.repository == 'Comfy-Org/comfy-kitchen'
     runs-on: ubuntu-22.04-arm
 
     steps:
@@ -351,6 +352,7 @@ jobs:
 
   build_wheels_windows:
     name: Build Windows wheel (Python ${{ matrix.python-version }})
+    if: github.repository == 'Comfy-Org/comfy-kitchen'
     runs-on: windows-2022
     strategy:
       matrix:
@@ -561,6 +563,7 @@ jobs:
   test_linux:
     name: Test on Linux (Python ${{ matrix.python-version }})
     needs: build_wheels_linux
+    if: github.repository == 'Comfy-Org/comfy-kitchen'
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -608,6 +611,7 @@ jobs:
   test_windows:
     name: Test on Windows (Python ${{ matrix.python-version }})
     needs: build_wheels_windows
+    if: github.repository == 'Comfy-Org/comfy-kitchen'
     runs-on: windows-2022
     strategy:
       matrix:
@@ -654,9 +658,10 @@ jobs:
 
   # Windows on ARM CUDA wheels via CUDA Toolkit 13.4 developer preview
   # (https://packages.nvidia.com/prerelease/cuda/13.4.0/...).
-  # WoA ships only the Stable ABI (cp312-abi3) wheel — no 3.10/3.11 builds.
+  # WoA ships only the Stable ABI (cp312-abi3) wheel - no 3.10/3.11 builds.
   build_wheels_windows_arm:
     name: Build Windows ARM abi3 wheel
+    if: github.repository == 'Comfy-Org/comfy-kitchen'
     runs-on: windows-11-arm
 
     steps:
@@ -937,6 +942,7 @@ jobs:
   test_windows_arm:
     name: Test on Windows ARM (abi3)
     needs: build_wheels_windows_arm
+    if: github.repository == 'Comfy-Org/comfy-kitchen'
     runs-on: windows-11-arm
 
     steps:
@@ -977,65 +983,3 @@ jobs:
           # Run all tests - conftest handles backend availability
           # Tests requiring CUDA will be skipped on CPU-only runners
           python -m pytest tests/ -v --tb=short
-
-  publish:
-    name: Publish to PyPI
-    needs: [build_wheels_linux, build_wheels_linux_arm64, build_wheels_windows, build_wheels_windows_arm, test_linux, test_windows, test_windows_arm]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    environment: pypi
-
-    steps:
-      - name: Download Linux CUDA+HIP wheel
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-linux-cuda-hip
-          path: dist/
-
-      - name: Download Linux ARM64 CUDA wheel
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-linux-arm64-cuda
-          path: dist/
-
-      - name: Download Windows CUDA+HIP wheel (3.10)
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-windows-cuda-hip-3.10
-          path: dist/
-
-      - name: Download Windows CUDA+HIP wheel (3.11)
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-windows-cuda-hip-3.11
-          path: dist/
-
-      - name: Download Windows CUDA+HIP wheel (3.12)
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-windows-cuda-hip-3.12
-          path: dist/
-
-      - name: Download Windows ARM CUDA abi3 wheel
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-windows-arm-cuda
-          path: dist/
-
-      - name: Download CPU-only wheel
-        uses: actions/download-artifact@v4
-        with:
-          name: wheels-cpu-only
-          path: dist/
-
-      - name: List wheels to publish
-        run: |
-          echo "Wheels to publish:"
-          ls -la dist/
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
-          skip-existing: true
-          verbose: true
