@@ -17,3 +17,8 @@ uv.lock
 .idea/
 *.pyd
 *.so
+.env
+.env.*
+!.env.example
+*.pem
+*.key
